@@ -3,8 +3,7 @@ from rest_framework import serializers
 
 class PipelineInputSerializer(serializers.Serializer):
     """
-        Checks that the json body has a valid format. The datefield format is 
-        set to default, which means it should be in the format 'yyyy-mm-dd'
+        Checks that the json body has a valid format.
 
         Parameters
         ----------
