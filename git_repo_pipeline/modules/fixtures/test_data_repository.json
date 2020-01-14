@@ -1,0 +1,18 @@
+[
+{
+    "model": "modules.repository",
+    "pk": 1,
+    "fields": {
+        "owner": "apache",
+        "repository": "spark"
+    }
+},
+{
+    "model": "modules.repository",
+    "pk": 2,
+    "fields": {
+        "owner": "apache",
+        "repository": "hadoop"
+    }
+}
+]
