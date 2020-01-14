@@ -16,7 +16,7 @@ class User(models.Model):
     Defines the user model. It is assumed that all users must have an id, 
     username and email. As the user id is unique, it is used as the primary key.
     """
-    userId = models.CharField(max_length=200, primary_key=True)
+    userId = models.IntegerField(primary_key=True)
     username = models.CharField(max_length=200, unique=True)
     name = models.CharField(max_length=200, blank=False)
     userType = models.CharField(max_length=200)
@@ -32,7 +32,7 @@ class Commit(models.Model):
     """
     repoId = models.CharField(max_length=200)
     sha = models.CharField(max_length=200, primary_key=True)
-    authorId = models.CharField(max_length=200)
+    authorId = models.IntegerField()
     committerId = models.CharField(max_length=200)
     commitDate = models.DateTimeField()
     commentCount = models.IntegerField(null=True)
