@@ -1,5 +1,4 @@
 from django.db import connection
-from datetime import datetime
 
 
 def raw_query(start_date, end_date):

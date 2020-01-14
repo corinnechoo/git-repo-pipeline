@@ -2,13 +2,13 @@ import json
 
 import modules.contribution as contribution
 import modules.heatmap as heat_map
+import modules.rank as rank
+
 from django.db import models
-from django.db.models import Count
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 
 from .formatter import format_end_date, raw_query
-from .models import Commit, User
 from .pipeline import DataPipeline
 from .serializers import InputSerializer, PipelineInputSerializer
 
@@ -60,25 +60,11 @@ def top_authors(request):
             return HttpResponse(json.dumps(validation.errors), status=400)
 
         request_body = format_end_date(request_body)
+        author_ids = rank.query(request_body['start_date'], request_body['end_date'], 3)
 
-        author_ids = Commit.objects.filter(commitDate__range=[request_body['start_date'], request_body['end_date']]).values(
-            'authorId').annotate(total=Count('authorId')).order_by('-total')[:3]
+        output = rank.format_output(author_ids)
 
-        store = {}
-        for author in author_ids:
-            store[author['authorId']] = author['total']
-
-        authors = User.objects.filter(userId__in=list(store.keys()))
-        output = [{'id': a.userId,
-                   'username': a.username,
-                   'name': a.name,
-                   'email': a.email,
-                   'commits': store.get(a.userId)
-                   } for a in authors]
-
-        sorted_output = json.dumps(
-            sorted(output, key=lambda x: x['commits'], reverse=True))
-        return HttpResponse(sorted_output)
+        return HttpResponse(json.dumps(output))
     return HttpResponse(status=400)
 
 

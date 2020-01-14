@@ -1,5 +1,4 @@
 from django.db import connection
-from datetime import datetime
 
 
 def format_output(result):
