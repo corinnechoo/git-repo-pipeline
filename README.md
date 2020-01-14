@@ -14,8 +14,10 @@ For the purpose of this assignment, the database schema is designed to best answ
 Steps:
 
 First, create a virtual environment and install the requirements for the code.
+
 ```
 $ pipenv shell
+$ cd git_repo_pipeline/git_repo_pipeline
 $ pip install -r requirements.txt
 ```
 
@@ -29,7 +31,6 @@ $ python manage.py migrate
 
 Then, start the server:
 ```
-$ cd git_repo_pipeline
 $ python manage.py runserver
 ```
 
