@@ -22,5 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("store/", modules.views.store, name="store"),
     path("authors/top/", modules.views.top_authors, name="top_authors"),
-    path("authors/contribution/", modules.views.most_contribution, name="most_contribution")
+    path("authors/contribution/", modules.views.most_contribution, name="most_contribution"),
+    path("heatmap/", modules.views.heatmap, name="heatmap")
 ]

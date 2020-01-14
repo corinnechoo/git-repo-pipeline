@@ -131,3 +131,61 @@ def most_contribution(request):
 
         return HttpResponse(json.dumps(output))
     return HttpResponse(status=400)
+
+
+@api_view(['POST'])
+def heatmap(request):
+    """  
+    Reads in stated parameters and 1 author with the longest contribution window
+
+    Returns
+    -------
+    dict
+        dictionary containing userid, username, name, email and contribution_window_days
+
+    """
+    if request.method == 'POST':
+        request_body = request.data
+        validation = InputSerializer(data=request_body)
+
+        if not validation.is_valid():
+            return HttpResponse(json.dumps(validation.errors), status=400)
+
+        request_body = format_end_date(request_body)
+        sql = """
+            SELECT 
+            CASE hour
+                WHEN 0 THEN '12am-3am' 
+                WHEN 1 THEN '3am-6am'
+                WHEN 2 THEN '6am-9am'
+                WHEN 3 THEN '9am-12pm'
+                WHEN 4 THEN '12pm-3pm'
+                WHEN 5 THEN '3pm-6pm'
+                WHEN 6 THEN '6pm-9pm'
+                WHEN 7 THEN '9pm-12am'
+            END AS hour_group,
+            SUM(CASE day WHEN 1 THEN 1 else 0 end) AS "Mon",
+            SUM(CASE day WHEN 2 THEN 1 else 0 end) AS "Tues",
+            SUM(CASE day WHEN 3 THEN 1 else 0 end) AS "Wed",
+            SUM(CASE day WHEN 4 THEN 1 else 0 end) AS "Thurs",
+            SUM(CASE day WHEN 5 THEN 1 else 0 end) AS "Fri",
+            SUM(CASE day WHEN 6 THEN 1 else 0 end) AS "Sat",
+            SUM(CASE day WHEN 0 THEN 1 else 0 end) AS "Sun"
+            FROM (
+                SELECT 
+                CAST (strftime('%%w', commitDate) AS INTEGER) day, 
+                CAST ((strftime( '%%H', commitDate) / 3) AS INTEGER) hour, 
+                *  
+                FROM modules_commit 
+                WHERE commitDate BETWEEN %s AND %s
+            ) p
+            GROUP BY hour
+            ORDER BY hour
+            ;
+            """
+
+        output = raw_query(
+            sql, request_body['start_date'], request_body['end_date'])
+
+        return HttpResponse(json.dumps(output))
+    return HttpResponse(status=400)

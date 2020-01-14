@@ -52,10 +52,23 @@ class SimpleTest(TestCase):
             "/store/", p, content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
+    @data(('/authors/top/', 'apache', 'hadoop', None, None), ('/authors/top/', 'apache', '', '2020-01-12', '2020-01-13'),
+          ('/authors/contribution/', 'apache', 'hadoop', None, None), ('/heatmap/', 'apache', 'hadoop', None, None))
+    def test_endpoints_invalid_input(self, values):
+        """
+        Tests invalid inputs for the 3 endpoints: /authors/top/, /authors/contribution/
+        and /heatmap. Ensures that
+        first result returned has the highest number of commits
+        """
+        p = self.format_input(values[1], values[2], values[3], values[4])
+        response = self.client.post(
+            values[0], p, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
     @data(('apache', 'hadoop', '2020-01-10', None), ('apache', 'hadoop', '2020-01-12', '2020-01-13'))
     def test_top_authors_valid_input(self, values):
         """
-        Tests valid inputs for the /authors/top endpoint. Ensures that
+        Tests valid inputs for the /authors/top/ endpoint. Ensures that
         first result returned has the highest number of commits
         """
         p = self.format_input(values[0], values[1], values[2], values[3])
@@ -72,23 +85,10 @@ class SimpleTest(TestCase):
             self.assertTrue(
                 response_json[1]['commits'] >= response_json[2]['commits'])
 
-    @data(('/authors/top/', 'apache', 'hadoop', None, None), ('/authors/top/', 'apache', '', '2020-01-12', '2020-01-13'),
-          ('/authors/contribution/', 'apache', 'hadoop', None, None))
-    def test_endpoints_invalid_input(self, values):
-        """
-        Tests invalid inputs for the 3 endpoints: /authors/top, /authors/contribution
-        and /heatmap. Ensures that
-        first result returned has the highest number of commits
-        """
-        p = self.format_input(values[1], values[2], values[3], values[4])
-        response = self.client.post(
-            values[0], p, content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-
     @data(('apache', 'hadoop', '2020-01-10', None), ('apache', 'hadoop', '2020-01-12', '2020-01-13'))
     def test_most_contribution_valid_input(self, values):
         """
-        Tests valid inputs for the /authors/top endpoint. Ensures that
+        Tests valid inputs for the /authors/contribution/ endpoint. Ensures that
         first result returned has the highest number of commits
         """
         p = self.format_input(values[0], values[1], values[2], values[3])
@@ -99,4 +99,24 @@ class SimpleTest(TestCase):
         response_json = json.loads(response.content)
 
         self.assertTrue(type(response_json) == dict)
-        self.assertTrue(set(response_json.keys()) == set(['id','username', 'name', 'email', 'contribution_window_days']))
+        self.assertTrue(set(response_json.keys()) == set(
+            ['id', 'username', 'name', 'email', 'contribution_window_days']))
+
+    @data(('apache', 'hadoop', '2020-01-08', None))
+    def test_heatmap_valid_input(self, values):
+        """
+        Tests valid inputs for the /heatmap/ endpoint. Ensures there
+        are only 8 rows (8 time frames), and that each row has no more than
+        8 columns (1 column is the time, and the next 7 columns are the days)
+        """
+        p = self.format_input(values[0], values[1], values[2], values[3])
+        response = self.client.post(
+            "/heatmap/", p, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        response_json = json.loads(response.content)
+
+        self.assertTrue(type(response_json) == list)
+        self.assertTrue(len(response_json) <= 8)
+        if len(response_json) > 0:
+            self.assertTrue(len(response_json[0]) <= 8)
